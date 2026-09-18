@@ -84,8 +84,10 @@ of your choice. Upload the 'ym2203_r2_fab.zip' archive and set the following par
 
 When populating components either start with the smallest SMT parts first (resistors and small capacitors)
 or start with the SOIC-8 LM358 OpAmps so that you have plenty of room for the soldering iron tip.
-After that, solder the bigger 10uF capacitors. Solder the through hole parts and the audio connector
-at the end. I strongly recommend to use IC sockets for YM2203C chips and also for YM3014B chips.
+After that, solder the bigger 10uF capacitors - check the capacitor's polarity. The SMT caps use
+the stripe on the positive (+) side, the electrolytic TH caps use the stripe on the negative (-) side.
+Solder the through hole parts and the audio connector at the end. 
+I strongly recommend to use IC sockets for YM2203C chips and also for YM3014B chips.
 IC sockets ensure you do not overheat and damage the chips while soldering. They will also allow
 you to swap the chip in case you get faulty chips sourced from Aliexpress (not uncommon).
 
@@ -93,3 +95,17 @@ If you are not familiar with SMT soldering check some YT videos and use one of t
 as a practice board to solder some SMT resistors and caps. It is not that hard, just requires
 good tweezers, use of soldering flux and a bit of practice.
 
+Audio output
+--------------
+The output audio signal is routed through J1 'mixing' header. The header is supposed to be populated
+by jumper caps that connect individual sound sources to either a stereo or mono output. The sound
+sources are FM1, PSG1 (both coming from the YM2203 #1) and FM2 and PSG2 (both coming from YM2203 #2).
+Yes, YM2203 chips have separate output for FM channels and for the PSG channels. The PSG channel
+volume can be adjusted (relatively to the FM channels) by RV1 and RV2 potentiometers.
+The middle jumper position on J1 - when shorted - joins all outputs to a mono signal (routed to
+both Left and Right audio channel). By default the jumpers are supposed to be all connected (see the 
+YM bard image), but you can undo them if you want to disable certain audio sources from the final output. 
+Additionally/optionally you might want to design/add a post processing audio option to YM Bard 
+by connecting it via J1 and J2 header (has GND and 5V pins). The output is not amplified but
+is capable of driving small headphones via J5 headphone socket. If you want louder sound use
+PC speakers with an amplifier connected to the headphone socket.

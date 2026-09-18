@@ -1,0 +1,14 @@
+"Reference","Value","Qty","Notes"
+"C1,C2,C3,C4,C8,C9,C10,C11,C12,C15,C19,C22,C25","10uF",13,SMT 1210 or SMT 1208
+"C5,C13,C17,C18,C20,C21,C23,C24,C26","0.1uF",9,SMT 0805
+"C6,C7,C14,C16","1nF",4,SMT 0805
+"J1","AUD_MIX",1,header pin 2x5 2.54mm pin pitch TH
+"J5","AudioJack3",1,PJ-328 Audio jack
+"R1,R2,R3,R10,R12,R14,R17,R22","1k",8,SMT 0805
+"R4,R5,R6,R7,R8,R9,R11,R13,R15,R16,R18,R21","4k7",12,SMT 0805
+"R19,R20","10k",2,SMT 0805
+"RV1,RV2","2k",2,potentiometer 3362P 2k
+"U1,U2","YM2203",2,YM2203C Aliexpress
+"U3,U5","YM3014B",2,DAC for Yamaha FM chips
+"U4,U6,U7","LM358",3,SMT SOIC-8
+"-","jumper cap",5,2.54mm jumper cap (for audio 'mixer')

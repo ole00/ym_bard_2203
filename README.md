@@ -35,8 +35,8 @@ If you use Arduino NANO ESP32-S3 then make sure to install "esp32 by Espressif" 
 board support in Arduino IDE Board manager before you do the upload.
 
 The sketch reads binary data sent from the connected PC serial port (115200 baud rate)
-and writes the data to the parallel data bus of the FM chips. The stream format supports either 
-3 byte packet and/or 12 byte packet.
+and writes the data to the parallel data bus of the FM chips. The stream format supports two types of packets: 
+3 byte packet and 12 byte packet.
 
 **3 byte packet**
 

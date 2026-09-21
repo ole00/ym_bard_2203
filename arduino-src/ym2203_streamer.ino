@@ -7,6 +7,11 @@
 #define USE_ESP32S3
 #endif
 
+#ifdef _RENESAS_RA_
+#include "pwm.h"
+#define USE_RENESAS_RA
+#endif
+
 
 #ifdef USE_ESP32S3
 #define USE_FAST_MCU
@@ -16,20 +21,42 @@
 #define PIN_WR  47
 #define PIN_RESET 3
 
-#define PIN_D0 5
-#define PIN_D1 6
-#define PIN_D2 7
-#define PIN_D3 8
-#define PIN_D4 9
-#define PIN_D5 10
-#define PIN_D6 17
-#define PIN_D7 21
+#define PIN_DB0 5
+#define PIN_DB1 6
+#define PIN_DB2 7
+#define PIN_DB3 8
+#define PIN_DB4 9
+#define PIN_DB5 10
+#define PIN_DB6 17
+#define PIN_DB7 21
 #define PIN_ADDR 38
 #define PIN_YM_CLK 18
 
-#define PIN_LED 45
+#define PIN_BOARD_LED 45
 #define LED_INVERSE 1
 
+#elif defined(USE_RENESAS_RA)
+// Renesas based Arduino NANO R4
+#define USE_FAST_MCU
+#define PIN_CS1 A0
+#define PIN_CS2 A1
+
+#define PIN_WR  12
+#define PIN_RESET A2
+
+#define PIN_DB0 2
+#define PIN_DB1 3
+#define PIN_DB2 4
+#define PIN_DB3 5
+#define PIN_DB4 6
+#define PIN_DB5 7
+#define PIN_DB6 8
+#define PIN_DB7 10
+#define PIN_ADDR 11
+#define PIN_YM_CLK 9
+
+#define PIN_BOARD_LED LED_BUILTIN
+#define LED_INVERSE 0
 #else
 // Atmega based arduinos
 #define PIN_CS1 A0
@@ -38,28 +65,28 @@
 #define PIN_WR  12
 #define PIN_RESET A2
 
-#define PIN_D0 2
-#define PIN_D1 3
-#define PIN_D2 4
-#define PIN_D3 5
-#define PIN_D4 6
-#define PIN_D5 7
-#define PIN_D6 8
-#define PIN_D7 10
+#define PIN_DB0 2
+#define PIN_DB1 3
+#define PIN_DB2 4
+#define PIN_DB3 5
+#define PIN_DB4 6
+#define PIN_DB5 7
+#define PIN_DB6 8
+#define PIN_DB7 10
 #define PIN_ADDR 11
 #define PIN_YM_CLK 9
 
-#define PIN_LED LED_BUILTIN
+#define PIN_BOARD_LED LED_BUILTIN
 #define LED_INVERSE 0
 
-#define M_D0 (1 << PIN_D0)
-#define M_D1 (1 << PIN_D1)
-#define M_D2 (1 << PIN_D2)
-#define M_D3 (1 << PIN_D3)
-#define M_D4 (1 << PIN_D4)
-#define M_D5 (1 << PIN_D5)
-#define M_D6 (1 << (PIN_D6 - 8))
-#define M_D7 (1 << (PIN_D7 - 8))
+#define M_D0 (1 << PIN_DB0)
+#define M_D1 (1 << PIN_DB1)
+#define M_D2 (1 << PIN_DB2)
+#define M_D3 (1 << PIN_DB3)
+#define M_D4 (1 << PIN_DB4)
+#define M_D5 (1 << PIN_DB5)
+#define M_D6 (1 << (PIN_DB6 - 8))
+#define M_D7 (1 << (PIN_DB7 - 8))
 #define M_WR (1 << (PIN_WR - 8))
 #define M_ADDR (1 << (PIN_ADDR - 8))
 
@@ -100,6 +127,28 @@ void setupPwm() {
     // 3. Write a 50% duty cycle square wave
     ledcWrite(PIN_YM_CLK, 1); 
 }
+#elif defined(USE_RENESAS_RA)
+ //Arduino NANO R4 (Renesas ARM at 5V)
+ void setupPwm() {
+    PwmOut* high_speed_clock = new PwmOut(PIN_YM_CLK);
+
+    // Configure HS clock via the core's native raw microsecond parameter initialization.
+    // Arguments: (period_units, pulse_width_units, raw_mode_flag, timer_divider)
+    // To get 3MHz signal from the 48MHz background bus clock (PCLKD):
+    // Period Cycles = 48,000,000 / 3,000,000 = 16 cycles
+    // Duty Cycle (50% Square Wave) = 16 / 2 = 8 cycles
+    uint32_t period_cycles = 16;
+    uint32_t pulse_cycles = 8;
+
+    // Passing 'true' alerts the driver to use raw CPU clock cycles 
+    // instead of abstract microsecond timing blocks.
+    bool success = high_speed_clock->begin(
+        period_cycles, 
+        pulse_cycles, 
+        true, 
+        TIMER_SOURCE_DIV_1
+    );
+ }
 #else
 // Atmega 328p or compatible
 // Can't produce 3MH clock, the closest match is 3.2MHz.
@@ -152,13 +201,13 @@ static void setupClockOutput() {
     // If so, set 3 Mhz clock.
     if (Si5351_init()) {
         Si5351_set_3_mhz();
-        digitalWrite(PIN_LED, LED_INVERSE ? LOW : HIGH);
+        digitalWrite(PIN_BOARD_LED, LED_INVERSE ? LOW : HIGH);
     } else
     // Fallback method of using PWM based clock.
     // Closest possible frequency is 3.2 MHz on Atmel arduinos, so music is a bit higher pitch.
     // ESP32-S3 based Arduinos can generate precise 3MHz clock frequency on their own.
     {    
-        digitalWrite(PIN_LED, LED_INVERSE ? HIGH : LOW); 
+        digitalWrite(PIN_BOARD_LED, LED_INVERSE ? HIGH : LOW); 
         setupPwm();
     }
 }
@@ -194,28 +243,28 @@ static inline uint8_t prefetchSerialBytes(uint8_t max, bool wait = false) {
     return max;
 }
 
-#ifdef USE_ESP32S3
+#ifdef USE_FAST_MCU
 // Write a byte to the data bus, also set the address bit.
 // This is a generic function for fast MCUs.
 static void writeDataBus(uint8_t value, uint8_t data) {
     digitalWrite(PIN_ADDR, data); // Address 0,  Data 1
     prefetchSerialBytes(12, true);
 
-    digitalWrite(PIN_D0, value & 1);
+    digitalWrite(PIN_DB0, value & 1);
     value >>= 1;
-    digitalWrite(PIN_D1, value & 1);
+    digitalWrite(PIN_DB1, value & 1);
     value >>= 1;
-    digitalWrite(PIN_D2, value & 1);
+    digitalWrite(PIN_DB2, value & 1);
     value >>= 1;
-    digitalWrite(PIN_D3, value & 1);
+    digitalWrite(PIN_DB3, value & 1);
     value >>= 1;
-    digitalWrite(PIN_D4, value & 1);
+    digitalWrite(PIN_DB4, value & 1);
     value >>= 1;
-    digitalWrite(PIN_D5, value & 1);
+    digitalWrite(PIN_DB5, value & 1);
     value >>= 1;
-    digitalWrite(PIN_D6, value & 1);
+    digitalWrite(PIN_DB6, value & 1);
     value >>= 1;
-    digitalWrite(PIN_D7, value & 1);
+    digitalWrite(PIN_DB7, value & 1);
 
     prefetchSerialBytes(12, true);
 
@@ -328,7 +377,7 @@ static void resetFm() {
 void setup() {
     Serial.begin(115200);
 
-    pinMode(PIN_LED, OUTPUT);
+    pinMode(PIN_BOARD_LED, OUTPUT);
     setupClockOutput();
 
     // Set Chip select pins
@@ -343,14 +392,14 @@ void setup() {
     digitalWrite(PIN_WR, HIGH);
 
     // Setup data bus pins
-    pinMode(PIN_D0, OUTPUT);
-    pinMode(PIN_D1, OUTPUT);
-    pinMode(PIN_D2, OUTPUT);
-    pinMode(PIN_D3, OUTPUT);
-    pinMode(PIN_D4, OUTPUT);
-    pinMode(PIN_D5, OUTPUT);
-    pinMode(PIN_D6, OUTPUT);
-    pinMode(PIN_D7, OUTPUT);
+    pinMode(PIN_DB0, OUTPUT);
+    pinMode(PIN_DB1, OUTPUT);
+    pinMode(PIN_DB2, OUTPUT);
+    pinMode(PIN_DB3, OUTPUT);
+    pinMode(PIN_DB4, OUTPUT);
+    pinMode(PIN_DB5, OUTPUT);
+    pinMode(PIN_DB6, OUTPUT);
+    pinMode(PIN_DB7, OUTPUT);
     pinMode(PIN_ADDR, OUTPUT);
 
     pinMode(PIN_RESET, OUTPUT);

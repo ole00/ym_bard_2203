@@ -9,13 +9,24 @@
 #define USE_ESP32S3
 #endif
 
-#ifdef USE_ESP32S3
-#define PIN_SDA 11
-#define PIN_SCL 12
+#ifdef _RENESAS_RA_
+#define USE_RENESAS_RA
+#endif
 
+#ifdef USE_ESP32S3
+#define PIN_I2C_SDA 11
+#define PIN_I2C_SCL 12
+#define I2C_COMMA ,
+
+#elif defined (USE_RENESAS_RA)
+// NANO R4 does not support I2C pin configuration, hardwires I2C pins to A4 and A5
+#define PIN_I2C_SDA
+#define PIN_I2C_SCL
+#define I2C_COMMA 
 #else
-#define PIN_SDA A4
-#define PIN_SCL A5
+#define PIN_I2C_SDA 
+#define PIN_I2C_SCL
+#define I2C_COMMA
 #endif
 
 #define SI5351_ADDRESS 0x60
@@ -49,7 +60,7 @@ static uint8_t readSiRegister(uint8_t regAddress) {
 
 bool Si5351_init() {
 
-    Wire.begin(PIN_SDA, PIN_SCL);
+    Wire.begin(PIN_I2C_SDA I2C_COMMA PIN_I2C_SCL);
 
     uint8_t r = readSiRegister(183);
 

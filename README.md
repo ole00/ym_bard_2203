@@ -17,15 +17,15 @@ Arduino selection
 ----------------------
 
 The b(o)ard requires and Arduino Nano or a NANO clone. You can use 5V Atmel based Arduino Nano
-or 3.3V ESP32-S3 based Arduino NANO or its clone. The picture above uses a cheap LGT8F328P 
-Nano board.
+or Renesas based Arduino NANO R4 or 3.3V ESP32-S3 based Arduino NANO or their clones.
+The picture above uses a cheap LGT8F328P Nano board.
 
 YM2203 requires an external clock of specific frequency to produce sounds. The clock can 
 be generated either by Arduino NANO or by an external Si5351 module connected on the bottom
 side of the YM Bard. The Si5351 module is optional, however the Atmel based Arduino NANO can
 only produce limited selection of clock frequencies, so it is recommended to use the module 
-in such case. ESP32-S3 based Arduino NANO can produce various frequencies and the clock module
-is not required.
+in such case. NANO R4 and ESP32-S3 based Arduino NANO can produce various frequencies 
+and the clock module is not required for driving the FM clock at 3 MHz.
 
 Audio data streaming
 ----------------------
